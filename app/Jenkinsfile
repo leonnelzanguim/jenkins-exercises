@@ -27,8 +27,9 @@ pipeline {
                     sh 'npm version patch --no-git-tag-version'
 
                 // lire la nouvelle version dans package.json
-                    def packageJson = readJSON file: 'package.json'
-                    def version = packageJson.version
+                    // def packageJson = readJSON file: 'package.json'
+                    // def version = packageJson.version
+                    def version = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
 
                 // stocker l’image Docker avec version + build number
                     env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
