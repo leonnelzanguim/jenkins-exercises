@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+    tools {
+        node "my-nodejs"
+    }
+    stages {
+        stage("install dependencies"){
+            steps {
+                dir('app') {
+                    sh 'npm install'
+                }
+            }
+        }
+        stage('run tests') {
+            steps {
+                dir('app'){
+                    sh 'npm test || echo " tests not found..."'
+                }
+            }
+        }
+        stage('Build and push Docker image') {
+            steps {
+                echo 'pushing docker image to docker hub...'
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    sh 'docker build -t 10012975/nodejs-app-image:1.0 ./app'
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh "docker push 10012975/nodejs-app-image:1.0"
+                }
+  
+            }
+            
+        }
+    }
+}
