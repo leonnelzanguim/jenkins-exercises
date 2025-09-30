@@ -11,27 +11,17 @@ pipeline {
                 }
             }
         }
-        stage('run tests') {
-            steps {
-                dir('app'){
-                    sh 'npm test || echo " tests not found..."'
-                }
-            }
-        }
         stage('increment version'){
             steps{
                 script {
                      echo 'Increment app version....'
                 dir('app') {
-                      // incrémente la version patch (ex: 1.0.0 -> 1.0.1)
-                    sh 'npm version patch --no-git-tag-version'
+                      // increment the minor version (ex: 1.0.0 -> 1.1.0)
+                    sh 'npm version minor --no-git-tag-version'
 
-                // lire la nouvelle version dans package.json
-                    // def packageJson = readJSON file: 'package.json'
-                    // def version = packageJson.version
+                // read the new version 
                     def version = sh(script: "node -p \"require('./package.json').version\"", returnStdout: true).trim()
 
-                // stocker l’image Docker avec version + build number
                     env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
 
                     echo "✅ new app version: ${env.IMAGE_NAME}"
@@ -42,6 +32,14 @@ pipeline {
                 
             }
         }
+        stage('run tests') {
+            steps {
+                dir('app'){
+                    sh 'npm test || echo " tests not found..."'
+                }
+            }
+        }
+        
         stage('Build and push Docker image') {
             steps {
                 echo 'pushing docker image to docker hub...'
@@ -53,6 +51,36 @@ pipeline {
   
             }
             
+        }
+
+        stage('commit version to Github') {
+            steps {
+                script {
+                    echo 'commit version to github...'
+                    script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-credentials-push',
+                        usernameVariable: 'USER',
+                        passwordVariable: 'PASS'
+                    )]) {
+
+                        sh 'git config --global user.email "jenkins@example.com"'
+            sh 'git config --global user.name "jenkins"'
+
+            sh 'git remote -v'
+            sh 'git status'
+            sh 'git branch'
+            sh 'git config --list'
+            
+            sh "git remote set-url origin https://${USER}:${PASS}@github.com/leonnelzanguim/jenkins-exercises.git"
+            sh 'git add .'
+            sh 'git commit -m "ci: version bump"'
+            sh 'git push origin HEAD:main'
+
+                    }
+
+                }
+            }
         }
     }
 }
