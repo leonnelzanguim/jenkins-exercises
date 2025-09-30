@@ -18,13 +18,36 @@ pipeline {
                 }
             }
         }
+        stage('increment version'){
+            steps{
+                script {
+                     echo 'Increment app version....'
+                dir('app') {
+                      // incrémente la version patch (ex: 1.0.0 -> 1.0.1)
+                    sh 'npm version patch --no-git-tag-version'
+
+                // lire la nouvelle version dans package.json
+                    def packageJson = readJSON file: 'package.json'
+                    def version = packageJson.version
+
+                // stocker l’image Docker avec version + build number
+                    env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+
+                    echo "✅ new app version: ${env.IMAGE_NAME}"
+                }
+
+                }
+               
+                
+            }
+        }
         stage('Build and push Docker image') {
             steps {
                 echo 'pushing docker image to docker hub...'
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                    sh 'docker build -t 10012975/nodejs-app-image:1.0 ./app'
+                    sh "docker build -t 10012975/nodejs-app-image:$IMAGE_NAME ./app"
                     sh 'echo $PASS | docker login -u $USER --password-stdin'
-                    sh "docker push 10012975/nodejs-app-image:1.0"
+                    sh "docker push 10012975/nodejs-app-image:$IMAGE_NAME"
                 }
   
             }
