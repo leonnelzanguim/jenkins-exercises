@@ -45,7 +45,7 @@ pipeline {
                 echo 'pushing docker image to docker hub...'
                 withCredentials([usernamePassword(credentialsId: 'nexus-docker-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                     sh "docker build -t 64.226.119.94:8083/nodejs-app-image:$IMAGE_NAME ./app"
-                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                    sh 'echo $PASS | docker login -u $USER --password-stdin 64.226.119.94:8083'
                     sh "docker push 64.226.119.94:8083/nodejs-app-image:$IMAGE_NAME"
                 }
   
