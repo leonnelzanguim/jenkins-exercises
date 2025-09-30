@@ -43,10 +43,10 @@ pipeline {
         stage('Build and push Docker image') {
             steps {
                 echo 'pushing docker image to docker hub...'
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                    sh "docker build -t 10012975/nodejs-app-image:$IMAGE_NAME ./app"
+                withCredentials([usernamePassword(credentialsId: 'nexus-docker-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    sh "docker build -t 64.226.119.94:8083/nodejs-app-image:$IMAGE_NAME ./app"
                     sh 'echo $PASS | docker login -u $USER --password-stdin'
-                    sh "docker push 10012975/nodejs-app-image:$IMAGE_NAME"
+                    sh "docker push 64.226.119.94:8083/nodejs-app-image:$IMAGE_NAME"
                 }
   
             }
