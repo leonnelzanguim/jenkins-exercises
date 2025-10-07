@@ -12,6 +12,12 @@ pipeline {
             }
         }
         stage('increment version'){
+            when {
+            expression {
+              return env.GIT_BRANCH == "main"
+            }
+          }
+
             steps{
                 script {
                      echo 'Increment app version....'
@@ -41,6 +47,12 @@ pipeline {
         }
         
         stage('Build and push Docker image') {
+            when {
+            expression {
+              return env.GIT_BRANCH == "main"
+            }
+          }
+
             steps {
                 echo 'pushing docker image to docker hub...'
                 withCredentials([usernamePassword(credentialsId: 'nexus-docker-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
@@ -54,6 +66,12 @@ pipeline {
         }
 
         stage('deploy') {
+            when {
+            expression {
+              return env.GIT_BRANCH == "main"
+            }
+          }
+
             steps {
                 script {
                      echo "Deploying application to EC2...."
@@ -69,6 +87,12 @@ pipeline {
         }
 
         stage('commit version to Github') {
+            when {
+            expression {
+              return env.GIT_BRANCH == "main"
+            }
+          }
+
             steps {
                 script {
                     echo 'commit version to github...'
