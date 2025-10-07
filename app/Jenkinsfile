@@ -49,7 +49,7 @@ pipeline {
         stage('Build and push Docker image') {
             when {
             expression {
-              return env.GIT_BRANCH == "main"
+              return env.GIT_BRANCH == "origin/main"
             }
           }
 
@@ -68,7 +68,7 @@ pipeline {
         stage('deploy') {
             when {
             expression {
-              return env.GIT_BRANCH == "main"
+              return env.GIT_BRANCH == "origin/main"
             }
           }
 
@@ -89,7 +89,7 @@ pipeline {
         stage('commit version to Github') {
             when {
             expression {
-              return env.GIT_BRANCH == "main"
+              return env.GIT_BRANCH == "origin/main"
             }
           }
 
