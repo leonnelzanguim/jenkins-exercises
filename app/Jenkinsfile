@@ -53,6 +53,21 @@ pipeline {
             
         }
 
+        stage('deploy') {
+            steps {
+                script {
+                     echo "Deploying application to EC2...."
+                    def shellCmd = "bash ./server-cmds.sh 64.226.119.94:8083/nodejs-app-image:$IMAGE_NAME"
+                    def ec2Instance = "ec2-user@3.120.189.189"
+                    sshagent(['ec2-server-key']) {
+                        sh "scp server-cmds.sh ${ec2Instance}:/home/ec2-user"
+                        sh "scp docker-compose.yaml ${ec2Instance}:/home/ec2-user"
+                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
+                    }
+                }
+            }
+        }
+
         stage('commit version to Github') {
             steps {
                 script {
